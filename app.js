@@ -1,3 +1,6 @@
+/*jshint esversion: 8 */
+/* jshint node: true */
+
 // load modules
 const express = require('express');
 const morgan = require('morgan');

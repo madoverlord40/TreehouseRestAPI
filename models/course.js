@@ -1,3 +1,6 @@
+/*jshint esversion: 8 */
+/* jshint node: true */
+
 const { Model, DataTypes } = require('sequelize');
 const bcrypt = require('bcrypt');
 

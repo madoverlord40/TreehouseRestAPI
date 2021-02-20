@@ -1,4 +1,6 @@
 'use strict';
+/*jshint esversion: 8 */
+/* jshint node: true */
 
 const fs = require('fs');
 const path = require('path');

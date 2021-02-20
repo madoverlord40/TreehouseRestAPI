@@ -1,5 +1,8 @@
 'use strict';
 
+/*jshint esversion: 8 */
+/* jshint node: true */
+
 const auth = require('basic-auth');
 const { User } = require('../models');
 const bcrypt = require('bcrypt');
