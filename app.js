@@ -60,7 +60,7 @@ begin = async() => {
     } catch (error) {
         console.error('Unable to connect to the database:', error);
     }
-}
+};
 
 // start listening on our port
 const server = app.listen(app.get('port'), () => {
