@@ -56,7 +56,7 @@ router.post('/courses', authenticateUser,
                 "estimatedTime": req.body.estimatedTime,
                 "materialsNeeded": req.body.materialsNeeded,
                 "userId": req.currentUser.id
-            }
+            };
             await Course.create(newCourse);
             res.status(201);
             res.header('location', `/course/${req.currentUser.id}`);
