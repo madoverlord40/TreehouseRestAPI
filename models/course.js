@@ -2,8 +2,8 @@ const { Model, DataTypes } = require('sequelize');
 const bcrypt = require('bcrypt');
 
 module.exports = (sequelize) => {
-    class User extends Model {}
-    User.init({
+    class Course extends Model {}
+    Course.init({
         title: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -50,12 +50,12 @@ module.exports = (sequelize) => {
         materialsNeeded: {
             type: DataTypes.STRING,
             allowNull: false
-        },
-        userID: {
-            type: DataTypes.INTEGER,
-            allowNull: false
         }
     }, { sequelize });
 
-    return User;
+    Course.associate = (models) => {
+        Course.belongsTo(models.User, { foreignKey: 'userId' });
+    };
+
+    return Course;
 };

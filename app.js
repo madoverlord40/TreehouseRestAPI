@@ -61,7 +61,8 @@ begin = async() => {
 
 // start listening on our port
 const server = app.listen(app.get('port'), () => {
+
+    begin();
+
     console.log(`Express server is listening on port ${server.address().port}`);
 });
-
-begin();
