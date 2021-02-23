@@ -13,18 +13,15 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 
 // Route that returns a list of users.
-router.get('/users', authenticateUser,
+router.get('/users', 
     asyncHandler(async(req, res) => {
         let userList = [];
 
         try {
             await User.findAll().then((users) => {
-                let index = 0;
-                users.map((user) => {
+                users.forEach((user, index) => {
                     const userData = {firstName: user.firstName, lastName: user.lastName, email: user.emailAddress};
                     userList[index] = userData;
-                    index++;
-                    return user;
                   });
                   res.status(200);
                   res.json(userList);
@@ -42,28 +39,31 @@ router.get('/users', authenticateUser,
     })
 );
 
-// Route that returns a a list courses
-router.get('/courses', authenticateUser,
+// Route that returns a list courses
+router.get('/courses',
     asyncHandler(
         async(req, res) => {
-            let courseList = [];
             try {
-                await Course.findAll(
-                    {
-                        where: {
-                            userId: req.currentUser.id
+                var courseList = [];
+                var courseDetail = {};
+                
+                let courses = await Course.findAll()
+                
+                await Promise.all(courses.map(async (course, index) => {
+                    let user = await User.findOne({where: {id: course.userId}})
+                    courseDetail = {
+                        title: course.title,
+                        description: course.description,
+                        materialsNeeded: course.materialsNeeded,
+                        association: {
+                                firstName: user.firstName,
+                                lastName: user.lastName 
                         }
-                    }).then((courses) => {
-                        let index = 0;
-                        courses.map((course) => {
-                            const courseData = course;
-                            courseList[index] = courseData;
-                            index++;
-                            return course;
-                        });
-                        res.status(200);
-                        res.json(courseList);
-                    });
+                    }
+                    courseList[index] = courseDetail;
+                }))
+                res.status(200);
+                res.json(courseList);
             }
             catch(error) {
                 if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
@@ -81,21 +81,39 @@ router.get('/courses', authenticateUser,
 );
 
 // Route that returns a course
-router.get('/courses/:id', authenticateUser,
+router.get('/courses/:id', 
     asyncHandler(async(req, res) => {
         let courseDetail = null;
 
         try {
             await Course.findOne({
                 where: {
-                    userId: req.currentUser.id,
                     id: req.params.id
                 }
-            }).then(course => {
-                courseDetail = {title: course.title, description: course.description, materialsNeeded: course.materialsNeeded}
+            }).then(async course => {
+                if(course !== null && typeof(course) !== 'undefined') {
+                    await User.findOne({where: {id: course.userId}}).then((user) => {
+
+                        courseDetail = {
+                            title: course.title,
+                            description: course.description,
+                            materialsNeeded: course.materialsNeeded,
+                            association: {
+                                 firstName: user.firstName,
+                                 lastName: user.lastName 
+                                }
+                            }
+                        res.status(200);
+                        res.json(courseDetail);
+                    }).catch((error) => {
+                        res.status(500);
+                        res.json({"message": `Could not find associated user for course ${course.title}`});
+                    })
+                } else {
+                    res.status(404)
+                    res.json({"message":"record not found"})
+                }
             });
-            res.status(200);
-            res.json(courseDetail);
         } catch (error) {
             if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
                 const errors = error.errors.map(err => err.message);
@@ -149,12 +167,17 @@ router.put('/courses/:id', authenticateUser,
         try {
             await Course.update(req.body, {
                 where: {
-                    userId: req.currentUser.id,
                     id: req.params.id
                 }
             }).then (updatedCourse => {
-                res.status(204);
-                res.json({"message": 'Course updated successfully!'})
+                if(updatedCourse !== null && typeof(updatedCourse) !=='undefined') {
+                    res.status(200);
+                    res.header('location', `/course/${req.params.id}`);
+                    res.json({"message": 'Course updated successfully!'})
+                } else {
+                    res.status(404)
+                    res.json({"message":"record not found"})
+                }
             })
             
         } catch (error) {
@@ -178,12 +201,12 @@ router.delete('/courses/:id', authenticateUser,
         try {
             await Course.destroy({
                 where: {
-                    userId: req.currentUser.id,
                     id: req.params.id
                 }
             }).then(function(rowDeleted) { // rowDeleted will return number of rows deleted
                 if(rowDeleted === 1){
-                    res.status(204)
+                    res.status(200)
+                    res.header('location', `/`);
                     res.json({ "message": "Course successfully deleted!" });
                  } else {
                     res.status(404)
