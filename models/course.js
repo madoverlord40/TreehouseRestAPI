@@ -12,25 +12,22 @@ module.exports = (sequelize) => {
             allowNull: false,
             validate: {
                 notNull: {
-                    msg: 'A name is required'
+                    msg: 'A title is required'
                 },
                 notEmpty: {
-                    msg: 'Please provide a name'
+                    msg: 'Please provide a title'
                 }
             }
         },
         description: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: {
-                msg: 'The username you entered already exists'
-            },
             validate: {
                 notNull: {
-                    msg: 'A username is required'
+                    msg: 'A description is required'
                 },
                 notEmpty: {
-                    msg: 'Please provide a username'
+                    msg: 'Please provide a description'
                 }
             }
         },
@@ -39,14 +36,14 @@ module.exports = (sequelize) => {
             allowNull: false,
             validate: {
                 notNull: {
-                    msg: 'A password is required'
+                    msg: 'An estimated time is required'
                 },
                 notEmpty: {
-                    msg: 'Please provide a password'
+                    msg: 'Please provide an estimated time.'
                 },
                 len: {
-                    args: [8, 20],
-                    msg: 'The password should be between 8 and 20 characters in length'
+                    args: [1, 3],
+                    msg: 'The estimated time should be between 1 and 3 characters in length'
                 }
             }
         },
