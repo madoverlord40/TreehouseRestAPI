@@ -223,6 +223,7 @@ router.post('/users', asyncHandler(async(req, res) => {
 
             await User.create(newUser).then(createdUser => {
                 res.status(201)
+                res.header('location', '/');
                 res.json({ "message": "Account successfully created!" });
             });
             
