@@ -8,36 +8,23 @@ const { asyncHandler } = require('../middleware/async-handler');
 const { User, Course } = require('../models');
 const { authenticateUser } = require('../middleware/auth-user');
 const bcrypt = require('bcrypt');
+const { response } = require('express');
 
 // Construct a router instance.
 const router = express.Router();
 
 // Route that returns a list of users.
-router.get('/users', 
-    asyncHandler(async(req, res) => {
-        let userList = [];
-
-        try {
-            await User.findAll().then((users) => {
-                users.forEach((user, index) => {
-                    const userData = {firstName: user.firstName, lastName: user.lastName, email: user.emailAddress};
-                    userList[index] = userData;
-                  });
-                  res.status(200);
-                  res.json(userList);
-             });
-            } catch(error) {
-                if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-                    const errors = error.errors.map(err => err.message);
-                    res.status(400)
-                    res.json({ errors });
-                } else {
-                    throw error;
-                }
-            } 
-        res.end();
-    })
-);
+router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
+    const user = req.currentUser;
+  
+    res.json({
+      first_name: user.firstName,
+      last_name: user.lastName,
+      username: user.emailAddress
+    });
+    res.status(200);
+    res.end();
+  }));
 
 // Route that returns a list courses
 router.get('/courses',
@@ -55,7 +42,7 @@ router.get('/courses',
                         title: course.title,
                         description: course.description,
                         materialsNeeded: course.materialsNeeded,
-                        association: {
+                        user: {
                                 firstName: user.firstName,
                                 lastName: user.lastName 
                         }
@@ -98,7 +85,7 @@ router.get('/courses/:id',
                             title: course.title,
                             description: course.description,
                             materialsNeeded: course.materialsNeeded,
-                            association: {
+                            user: {
                                  firstName: user.firstName,
                                  lastName: user.lastName 
                                 }
@@ -245,9 +232,8 @@ router.post('/users', asyncHandler(async(req, res) => {
             };
 
             await User.create(newUser).then(createdUser => {
-                res.status(201)
+                res.status(204)
                 res.header('location', '/');
-                res.json({ "message": "Account successfully created!" });
             });
             
         } else {

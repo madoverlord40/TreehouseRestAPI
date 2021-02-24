@@ -32,24 +32,11 @@ module.exports = (sequelize) => {
             }
         },
         estimatedTime: {
-            type: DataTypes.TIME,
-            allowNull: false,
-            validate: {
-                notNull: {
-                    msg: 'An estimated time is required'
-                },
-                notEmpty: {
-                    msg: 'Please provide an estimated time.'
-                },
-                len: {
-                    args: [1, 3],
-                    msg: 'The estimated time should be between 1 and 3 characters in length'
-                }
-            }
+            type: DataTypes.STRING
+            
         },
         materialsNeeded: {
-            type: DataTypes.STRING,
-            allowNull: false
+            type: DataTypes.STRING
         }
     }, { sequelize });
 
