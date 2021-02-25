@@ -20,7 +20,8 @@ router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
     res.json({
       first_name: user.firstName,
       last_name: user.lastName,
-      username: user.emailAddress
+      username: user.emailAddress,
+      Id: user.id
     });
     res.status(200);
     res.end();
@@ -38,15 +39,21 @@ router.get('/courses',
                 
                 await Promise.all(courses.map(async (course, index) => {
                     let user = await User.findOne({where: {id: course.userId}})
-                    courseDetail = {
-                        title: course.title,
-                        description: course.description,
-                        materialsNeeded: course.materialsNeeded,
-                        user: {
-                                firstName: user.firstName,
-                                lastName: user.lastName 
+                        courseDetail = {
+                            title: course.title,
+                            description: course.description,
+                            materialsNeeded: course.materialsNeeded,
+                            estimatedTime: course.estimatedTime,
+                            id: course.id,
+                            userId: course.userId,
+                            user: {
+                                    firstName: user.firstName,
+                                    lastName: user.lastName,
+                                    emailAddress: user.emailAddress,
+                                    Id: user.id
+                                }
                         }
-                    }
+                    
                     courseList[index] = courseDetail;
                 }))
                 res.status(200);
@@ -85,9 +92,14 @@ router.get('/courses/:id',
                             title: course.title,
                             description: course.description,
                             materialsNeeded: course.materialsNeeded,
+                            estimatedTime: course.estimatedTime,
+                            id: course.id,
+                            userId: course.userId,
                             user: {
                                  firstName: user.firstName,
-                                 lastName: user.lastName 
+                                 lastName: user.lastName,
+                                 emailAddress: user.emailAddress,
+                                 Id: user.id
                                 }
                             }
                         res.status(200);
@@ -129,8 +141,7 @@ router.post('/courses', authenticateUser,
             };
             await Course.create(newCourse).then (createdCourse => {
                 res.status(201);
-                res.header('location', `/course/${req.currentUser.id}`);
-                res.json({ "message": `Successfully created course ${createdCourse.title}` });
+                res.header('location', `/course/${createdCourse.id}`);
             });
 
         } catch (error) {
@@ -138,7 +149,6 @@ router.post('/courses', authenticateUser,
                 const errors = error.errors.map(err => err.message);
                 res.status(400)
                 res.json({ errors });
-                res.end();
             } else {
                 throw error;
             }
@@ -188,13 +198,13 @@ router.delete('/courses/:id', authenticateUser,
         try {
             await Course.destroy({
                 where: {
-                    id: req.params.id
+                    id: req.params.id,
+                    userId: req.params.id
                 }
             }).then(function(rowDeleted) { // rowDeleted will return number of rows deleted
                 if(rowDeleted === 1){
                     res.status(200)
                     res.header('location', `/`);
-                    res.json({ "message": "Course successfully deleted!" });
                  } else {
                     res.status(404)
                     res.json({"message":"record not found"})
@@ -202,7 +212,7 @@ router.delete('/courses/:id', authenticateUser,
                 }
             )
             .catch(function (error){
-                res.status(500).json(error);
+                res.status(500).json(error.message);
             });
         } catch (error) {
             if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
@@ -232,7 +242,7 @@ router.post('/users', asyncHandler(async(req, res) => {
             };
 
             await User.create(newUser).then(createdUser => {
-                res.status(204)
+                res.status(201)
                 res.header('location', '/');
             });
             
