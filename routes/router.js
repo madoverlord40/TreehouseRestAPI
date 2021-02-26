@@ -164,16 +164,23 @@ router.put('/courses/:id', authenticateUser,
         try {
             await Course.update(req.body, {
                 where: {
-                    id: req.params.id
+                    id: req.params.id,
+                    userId: req.currentUser.id
                 }
             }).then (updatedCourse => {
-                if(updatedCourse !== null && typeof(updatedCourse) !=='undefined') {
-                    res.status(200);
-                    res.header('location', `/course/${req.params.id}`);
-                    res.json({"message": 'Course updated successfully!'})
+                if(updatedCourse !== null && typeof(updatedCourse) !=='undefined' && updatedCourse.length > 0) {
+                    if(updatedCourse[0] > 0) {
+                        res.status(200);
+                        res.header('location', `/course/${req.params.id}`);
+                        res.json({"message": 'Course updated successfully!'})
+                    }
+                    else {
+                        res.status(403)
+                        res.json({"message":"You are not authorized to update information for this course!"})
+                    }
                 } else {
-                    res.status(403)
-                    res.json({"message":"You are not authorized to update information for this course!"})
+                    res.status(404)
+                    res.json({"message":"Record was not found!"})
                 }
             })
             
@@ -199,7 +206,7 @@ router.delete('/courses/:id', authenticateUser,
             await Course.destroy({
                 where: {
                     id: req.params.id,
-                    userId: req.params.id
+                    userId: req.currentUser.id
                 }
             }).then(function(rowDeleted) { // rowDeleted will return number of rows deleted
                 if(rowDeleted === 1){
