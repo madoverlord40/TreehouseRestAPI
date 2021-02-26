@@ -172,8 +172,8 @@ router.put('/courses/:id', authenticateUser,
                     res.header('location', `/course/${req.params.id}`);
                     res.json({"message": 'Course updated successfully!'})
                 } else {
-                    res.status(404)
-                    res.json({"message":"record not found"})
+                    res.status(403)
+                    res.json({"message":"You are not authorized to update information for this course!"})
                 }
             })
             
@@ -206,8 +206,8 @@ router.delete('/courses/:id', authenticateUser,
                     res.status(200)
                     res.header('location', `/`);
                  } else {
-                    res.status(404)
-                    res.json({"message":"record not found"})
+                    res.status(403)
+                    res.json({"message":"You are not authorized to delete this course!"})
                  }
                 }
             )
